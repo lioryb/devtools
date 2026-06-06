@@ -31,32 +31,24 @@
 # @endcode
 #
 
+import os
 import sys
 import subprocess
-
-# Determine if running inside a virtual environment (venv)
-IS_VENV = sys.prefix != sys.base_prefix
-
-try:
-    import pycdlib
-except ImportError:
-    if IS_VENV:
-        print("Dependency 'pycdlib' not found. Virtual environment detected. Attempting auto-installation...")
-        try:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", "pycdlib"])
-            import pycdlib
-            print("Successfully installed pycdlib!")
-        except Exception as e:
-            print(f"Error: Failed to automatically install 'pycdlib' inside venv: {e}", file=sys.stderr)
-            sys.exit(1)
-    else:
-        print("Error: Missing dependency 'pycdlib'.", file=sys.stderr)
-        print("Global environment detected. Auto-installation aborted to safeguard system packages.", file=sys.stderr)
-        print("Please activate a virtual environment or install it manually via: pip install pycdlib", file=sys.stderr)
-        sys.exit(1)
-
 import argparse
 from pathlib import Path
+
+# Get the absolute path of the parent directory ('python/')
+current_directory = os.path.dirname(os.path.abspath(__file__))
+parent_directory = os.path.dirname(current_directory)
+
+# Add the parent directory to sys.path if it isn't already there
+if parent_directory not in sys.path:
+    sys.path.insert(0, parent_directory)
+
+from infra.packages_handler import import_or_install
+
+import_or_install("pycdlib")
+
 
 ## Base directory of the executing script.
 BASE_DIR = Path(__file__).resolve().parent
@@ -69,7 +61,6 @@ DEFAULT_META_DATA = BASE_DIR / "meta-data"
 
 ## Output path where the generated ISO file will be saved.
 OUT_ISO = BASE_DIR / "seed.iso"
-
 
 def get_input_paths():
     """
