@@ -1,0 +1,4 @@
+[include]
+	path = ~/dev/tools/git/user.config
+	path = ~/dev/tools/git/tools.config
+	path = ~/dev/tools/git/aliases.config

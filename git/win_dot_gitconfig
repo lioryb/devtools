@@ -1,0 +1,7 @@
+
+# include path for Windows only
+[include]
+	path = D:/dev/tools/git/user.config
+	path = D:/dev/tools/git/tools.config
+	path = D:/dev/tools/git/aliases.config
+
