@@ -1,0 +1,132 @@
+#cloud-config
+autoinstall:
+  version: 1
+
+  updates: all
+
+  locale: en_US.UTF-8
+
+  keyboard:
+    layout: us
+
+  timezone: Asia/Jerusalem
+
+  identity:
+    hostname: lyb
+    username: leeoryb
+    password: "$6$rounds=656000$Su./D90bBNf1kDR/$KOTwjRrhYp0GUDREsCGEqs9CChBvKGGVolbveftl6LEmHZkULpVQfaxb0blg7oI9k27ozvXmnkUEkzDQSnCd40"
+
+  ssh:
+    install-server: true
+    allow-pw: true
+
+  network:
+    version: 2
+    ethernets:
+
+      eth0:
+        dhcp4: true
+
+      eth1:
+        dhcp4: false
+        addresses:
+          - 192.168.100.80/24
+
+  packages:
+    - build-essential
+    - gcc
+    - g++
+    - clang
+    - make
+    - cmake
+    - pkg-config
+    - git
+    - curl
+    - wget
+    - unzip
+    - htop
+    - tree
+    - net-tools
+    - python3-pip
+    - python3-venv
+    - openssh-server
+    - vim
+    - tmux
+    - ripgrep
+    - fd-find
+
+  storage:
+    layout:
+      name: lvm
+
+  late-commands:
+    - curtin in-target --target=/target -- systemctl enable ssh
+
+    - |
+      cat > /target/usr/local/sbin/firstboot-provision.sh <<'EOF'
+      #!/usr/bin/env bash
+
+      set -euxo pipefail
+
+      exec > >(tee -a /var/log/firstboot-provision.log) 2>&1
+
+      export DEBIAN_FRONTEND=noninteractive
+
+      echo "===== FIRST BOOT PROVISION START ====="
+
+      apt-get update
+
+      apt-get install -y --no-install-recommends \
+        ubuntu-desktop-minimal \
+        build-essential \
+        gcc \
+        g++ \
+        clang \
+        make \
+        cmake \
+        pkg-config \
+        git \
+        curl \
+        wget \
+        unzip \
+        htop \
+        tree \
+        net-tools \
+        python3-pip \
+        python3-venv \
+        openssh-server \
+        vim \
+        tmux \
+        ripgrep \
+        gnome-terminal \
+        fd-find
+
+      systemctl set-default graphical.target
+
+      echo "===== FIRST BOOT PROVISION DONE ====="
+
+      systemctl disable firstboot-provision.service
+
+      systemctl reboot
+      EOF
+
+    - chmod +x /target/usr/local/sbin/firstboot-provision.sh
+
+    - |
+      cat > /target/etc/systemd/system/firstboot-provision.service <<'EOF'
+      [Unit]
+      Description=First boot provisioning
+      Wants=network-online.target
+      After=network-online.target
+
+      [Service]
+      Type=oneshot
+      ExecStart=/usr/local/sbin/firstboot-provision.sh
+      RemainAfterExit=yes
+
+      [Install]
+      WantedBy=multi-user.target
+      EOF
+
+    - curtin in-target --target=/target -- systemctl enable firstboot-provision.service
+
