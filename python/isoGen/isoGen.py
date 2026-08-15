@@ -47,17 +47,17 @@ if parent_directory not in sys.path:
 
 from infra.packages_handler import import_or_install
 
-import_or_install("pycdlib")
+pycdlib = import_or_install("pycdlib")
 
 
 ## Base directory of the executing script.
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent / "other" / "seed"
 
 ## Default path to the cloud-init user-data file.
-DEFAULT_USER_DATA = BASE_DIR / "user-data"
+DEFAULT_USER_DATA = BASE_DIR / "sources" / "user-data"
 
 ## Default path to the cloud-init meta-data file.
-DEFAULT_META_DATA = BASE_DIR / "meta-data"
+DEFAULT_META_DATA = BASE_DIR / "sources" / "meta-data"
 
 ## Output path where the generated ISO file will be saved.
 OUT_ISO = BASE_DIR / "seed.iso"
